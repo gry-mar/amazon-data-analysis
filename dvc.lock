@@ -1,0 +1,95 @@
+schema: '2.0'
+stages:
+  extraction:
+    cmd: python3 scripts/extraction.py
+    deps:
+    - path: scripts/extraction.py
+      md5: 4bd8642076d05ba95fdc20e6ecf77755
+      size: 2073
+    params:
+      params.yaml:
+        extraction.datasets:
+          test: data/segmentation/test.csv
+          train: data/segmentation/train.csv
+    outs:
+    - path: data/extraction/test.json
+      md5: 333e2d6634f191a8f0710405a4023064
+      size: 1885524
+    - path: data/extraction/train.json
+      md5: 90f2c937732f195df747cf23a190b1ee
+      size: 4547381
+  preprocessing:
+    cmd: python3 scripts/preprocessing.py
+    deps:
+    - path: scripts/preprocessing.py
+      md5: c7d299dede93da10ef7e33fc5dac158a
+      size: 938
+    params:
+      params.yaml:
+        preprocessing.datasets: data/Luxury_Beauty_5.json
+    outs:
+    - path: data/preprocessing/Luxury_Beauty_5.csv
+      md5: f5ddbdd644811fa4bab245d82d3bfba6
+      size: 22061647
+  hp_analysis:
+    cmd: papermill scripts/hyperparams_analsis.ipynb data/out_hp.ipynb -p output_dir
+      data/
+    deps:
+    - path: scripts/extraction.py
+      md5: 4bd8642076d05ba95fdc20e6ecf77755
+      size: 2073
+    params:
+      params.yaml:
+        hp.test: data/extraction/test.json
+        hp.train: data/extraction/train.json
+    outs:
+    - path: data/out_hp.ipynb
+      md5: 02201e0f4262031a853328b41847e3cc
+      size: 173889
+  analysis:
+    cmd: papermill scripts/cleaned.ipynb data/out_notebook.ipynb -p output_dir data/
+    deps:
+    - path: scripts/cleaned.ipynb
+      md5: a668b775168a9a02dced132a6b501e66
+      size: 6822
+    params:
+      params.yaml:
+        analysis.datasets: data/segmentation/train.csv
+    outs:
+    - path: data/out_notebook.ipynb
+      md5: 7a174b469ac19fdf36aca515ce32ac70
+      size: 490061
+  segmentation:
+    cmd: python3 scripts/data_segmentation.py
+    deps:
+    - path: scripts/data_segmentation.py
+      md5: 082b7971a1c7d0a2ae782263f7ffed79
+      size: 606
+    params:
+      params.yaml:
+        segmentation.datasets: data/preprocessing/Luxury_Beauty_5.csv
+    outs:
+    - path: data/segmentation/test.csv
+      md5: 3317e52f4d68e9d63386acb0f531a060
+      size: 6550504
+    - path: data/segmentation/train.csv
+      md5: 881aaaf41fe89129a9b17a2c64cedd75
+      size: 15524550
+  evaluation:
+    cmd: python3 scripts/evaluation.py
+    deps:
+    - path: scripts/evaluation.py
+      md5: b5575f57b33d21d6924f5349d00554b4
+      size: 5676
+    params:
+      params.yaml:
+        evaluation.classifier: rf
+        evaluation.data_selector: text
+        evaluation.datasets:
+          test: data/extraction/test.json
+          train: data/extraction/train.json
+        evaluation.strategy: uniform
+    outs:
+    - path: data/evaluation/results.json
+      md5: 305eb5461c80e58803f788cb927127de
+      size: 39

@@ -1,0 +1,27 @@
+preprocessing:
+  datasets: data/Luxury_Beauty_5.json
+
+segmentation:
+  datasets: data/preprocessing/Luxury_Beauty_5.csv
+
+analysis:
+  datasets: data/segmentation/train.csv
+
+hp:
+  train: data/extraction/train.json
+  test: data/extraction/test.json
+
+extraction:
+  datasets:
+    test: data/segmentation/test.csv
+    train: data/segmentation/train.csv
+
+evaluation:
+  datasets:
+    test: data/extraction/test.json
+    train: data/extraction/train.json
+  strategy: uniform
+  data_selector: text
+  classifier: rf
+
+

@@ -1,0 +1,64 @@
+stages:
+  preprocessing:
+    cmd: python3 scripts/preprocessing.py
+    deps:
+    - scripts/preprocessing.py
+    params:
+    - preprocessing.datasets
+    outs:
+    - data/preprocessing/Luxury_Beauty_5.csv
+
+  segmentation:
+    cmd: python3 scripts/data_segmentation.py
+    deps:
+    - scripts/data_segmentation.py
+    params:
+    - segmentation.datasets
+    outs:
+    - data/segmentation/train.csv
+    - data/segmentation/test.csv
+  
+  analysis:
+    cmd: papermill scripts/cleaned.ipynb data/out_notebook.ipynb -p output_dir data/
+    deps:
+    - scripts/cleaned.ipynb
+    params:
+    - analysis.datasets
+    metrics:
+    - data/out_notebook.ipynb:
+        cache: false
+
+  extraction:
+    cmd: python3 scripts/extraction.py
+    deps:
+    - scripts/extraction.py
+    params:
+    - extraction.datasets
+    outs: 
+    - data/extraction/test.json
+    - data/extraction/train.json
+
+  hp_analysis:
+    cmd: papermill scripts/hyperparams_analsis.ipynb data/out_hp.ipynb -p output_dir data/
+    deps:
+    - scripts/extraction.py
+    params:
+    - hp.train
+    - hp.test
+    metrics:
+    - data/out_hp.ipynb:
+        cache: false
+
+  evaluation:
+    cmd: python3 scripts/evaluation.py
+    deps:
+    - scripts/evaluation.py
+    params:
+    - evaluation.datasets
+    - evaluation.strategy
+    - evaluation.data_selector
+    - evaluation.classifier
+    metrics: 
+    - data/evaluation/results.json:
+        cache: false
+  
